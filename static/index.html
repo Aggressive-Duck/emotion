@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Emotion Predictor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Email Emotion Predictor</h1>
+        <p>Enter the text of an email below to analyze its emotion.</p>
+        
+        <div class="input-group">
+            <textarea id="emailText" placeholder="Type your email content here... (e.g., 'Respected sir, the beauty of the Northern areas...')"></textarea>
+        </div>
+        
+        <button onclick="predictEmotion()">Analyze Emotion</button>
+        
+        <div id="result" class="result-container hidden">
+            <h2>Predicted Emotion:</h2>
+            <p id="emotionLabel">--</p>
+        </div>
+        
+        <div id="error" class="error-container hidden"></div>
+    </div>
+
+    <script>
+        async function predictEmotion() {
+            const text = document.getElementById('emailText').value;
+            const resultDiv = document.getElementById('result');
+            const emotionLabel = document.getElementById('emotionLabel');
+            const errorDiv = document.getElementById('error');
+            
+            if (!text.trim()) {
+                alert("Please enter some text.");
+                return;
+            }
+            
+            // Reset UI
+            resultDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            emotionLabel.innerText = "Analyzing...";
+            resultDiv.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                emotionLabel.innerText = data.emotion;
+                
+            } catch (error) {
+                resultDiv.classList.add('hidden');
+                errorDiv.innerText = "Failed to get prediction. Ensure the backend is running.";
+                errorDiv.classList.remove('hidden');
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
